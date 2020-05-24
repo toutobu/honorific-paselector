@@ -1,0 +1,74 @@
+#+TITLE: Annotation Specification for toutobu/honorific-paselector
+
+* Decription
+toutobu/honorific-paselector 向けのコーパスのアノテーション仕様書。
+
+toutobu/honorific-paselector は toutobu アプリケーションの敬体に関する校正を実現
+するための述語構造解析器である。アプリケーションの一部として組込むためには、一切
+の人手を介さずに、自然文(toutobu アプリケーションにユーザが入力した、ままの文章)
+を解析できる必要がある。そのため toutobu アプリケーション向けの述語構造解析器は、
+自然文を解析器に適した形に変換する前処理部分と、述語構造解析器部分の二つから構成
+する。前処理部分については [[https://github.com/toutobu/pasnominator][toutobu/honorific-pasnominator]] で行い、述語構造解析器
+はこの toutobu/honorific-paselector で行う。
+
+このドキュメントでは toutobu/honorific-paselector 向けの学習データを作製する際の
+アノテーションの仕様について記載する。またこのドキュメントは同時に
+[[https://github.com/toutobu/pasnominator][toutobu/honorific-pasnominator]] が行う前処理についての仕様も記載する。
+
+toutobu/honorific-paselector 向けのアノテーション仕様書を作製するにあたって
+[[https://sites.google.com/site/naisttextcorpus/ntc-annotation-scheme][NAISTテキストコーパスのアノテーション仕様書]] を下敷にしている。理由は、NAIST テキ
+ストコーパスが多くの論文で引用されているためであり、下敷として利用する理由は、
+NAIST テキスロコーパスおよびそのアノテーション仕様は人手による自然文の、文の部分
+への分解と述語相当部分のタグ付けを前提としているが、toutobu アプリケーションでは
+ここを人手を介さずに実現する必要があるためである。
+
+* Specification
+** 前処理部分について
+前処理部分では、後続の解析器向けに、自然文の文の部分への分解と、文の部分に対する
+述語相当部分のタグ付けを行う。
+
+必須の条件として、前処理部分は人手を介さずに実現する必要がある。そのため、(自然
+言語処理の立場からすると少し遺憾ではあるが)形態論的に文章を自動的に分割してくれ
+る任意のツールの利用を想定している。現状では分割単位として形態素を、それから任意
+のツールとして MeCab を想定している。
+
+以上から、前処理部分では、自然文を MeCab を利用して形態素に分解した後、後続の解
+析器向けに形態素を統合して文の部分を構成した後、文の部分に対して述語相当部分のタ
+グ付けを行う。文の部分としては、 [[https://sites.google.com/site/naisttextcorpus/ntc-annotation-scheme][NAISTテキストコーパスのアノテーション仕様書]] を
+参考にする。以下に例を示す:
+
+#+begin_example
+自然文:
+  A社は新型交換機を導入する。
+
+形態素単位へ分割:
+  A 社 は 新型 交換 機 を 導入 する 。
+
+文の部分へ統合し、述語相当部分にタグ付け:
+  A社 は 新型交換機 を 導入する 。
+  Predicat{導入する}, wo-Arg{新型交換機}, ga-Arg{A社}
+#+end_example
+
+ただし、述語相当部分へのタグ付けを機械的に行うために曖昧さを除去する必要があり、
+NAIST テキストコーパスのアノテーション仕様に対し独自のルールを追加する。以下に独
+自のルールの例を示す:
+
+#+begin_example
+自然文:
+  A社は新型交換機を導入する。
+
+形態素単位へ分割:
+  A 社 は 新型 交換 機 を 導入 する 。
+
+文の部分へ統合し、述語相当部分にタグ付け:
+  A社 は 新型 交換 機 を 導入する 。
+  Predicat{導入する}, wo-Arg{機}, ga-Arg{社}
+#+end_example
+
+ここで「導入」はサ変名詞であり動詞「する」が後続するため、NAIST テキストコーパス
+のアノテーション仕様書に従って「導入する」を述語としている。ただしそのガ格には、
+「新型交換機」の代わりに「機」を、ヲ格には「A社」の代わりに「社」を採用する。
+
+以降、前処理の詳細について記載する。
+
+TBD
